@@ -13,7 +13,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskPr
 from rich import box
 
 from core.scanner import scan_commits, scan_staged, clone_repo, is_git_repo
-from core.output import print_findings, print_summary, print_detail, save_json, save_html
+from core.output import print_findings, print_summary, print_detail, save_json, save_html, save_txt
 
 console = Console(highlight=False)
 
@@ -121,11 +121,14 @@ def _scan_repo(repo_path, target_label, depth=None, since=None, branch=None,
     if detail:
         console.print()
         for f in sorted(findings, key=lambda x: severity_rank(x["severity"])):
-            print_detail(f, redact=redact)
+            print_detail(f, redact=False)
     else:
-        print_findings(findings, redact=redact)
+        print_findings(findings, redact=False)
 
     print_summary(findings, commits_scanned, elapsed)
+
+    save_txt(findings, "results.txt", target_label)
+    console.print(f"  saved  [dim]results.txt[/dim]\n")
 
     if output_base:
         save_html(findings, output_base + ".html", target_label, elapsed, commits_scanned)
@@ -173,7 +176,7 @@ def cmd_scan(args):
         branch=args.branch,
         staged=args.staged,
         min_severity=args.min_severity,
-        redact=not args.no_redact,
+        redact=False,
         output_base=args.output,
         html_path=args.html,
         json_path=args.json,
@@ -309,7 +312,7 @@ def cmd_scrape(args):
                 target_label=name,
                 depth=args.depth,
                 min_severity=args.min_severity,
-                redact=not args.no_redact,
+                redact=False,
                 output_base=out_base,
             )
             all_results.append((name, findings, commits, elapsed))

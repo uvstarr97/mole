@@ -78,6 +78,22 @@ def print_summary(findings, commits_scanned, elapsed):
     console.print()
 
 
+def save_txt(findings, path, target):
+    with open(path, "w") as fp:
+        fp.write(f"mole scan results\n")
+        fp.write(f"target: {target}\n")
+        fp.write(f"timestamp: {datetime.now().isoformat()}\n")
+        fp.write(f"total: {len(findings)}\n")
+        fp.write("-" * 60 + "\n\n")
+        for f in sorted(findings, key=lambda x: SEV_ORDER.get(x["severity"], 99)):
+            fp.write(f"[{f['severity']}] {f['name']}\n")
+            fp.write(f"  file:    {f['file']}:{f['line']}\n")
+            fp.write(f"  commit:  {f['commit']} {f['date']} {f['author']}\n")
+            fp.write(f"  message: {f['message']}\n")
+            fp.write(f"  match:   {f['match']}\n")
+            fp.write(f"  context: {f['context'][:100]}\n\n")
+
+
 def save_json(findings, path, target, redact=False):
     out = []
     for f in findings:
